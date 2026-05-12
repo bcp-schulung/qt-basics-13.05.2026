@@ -99,9 +99,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QProgressBar" name="progressBar">
-          <property name="value">
-           <number>24</number>
+         <widget class="TemperatureBandWidget" name="temperatureBandWidget">
+          <property name="minimumHeight">
+           <number>50</number>
           </property>
          </widget>
         </item>
@@ -173,6 +173,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TemperatureBandWidget</class>
+   <extends>QWidget</extends>
+   <header>TemperatureBandWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

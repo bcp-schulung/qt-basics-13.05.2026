@@ -2,6 +2,7 @@
 #include "./ui_mainwindow.h"
 #include "WeatherModel.h"
 #include "TemperatureAreaChart.h"
+#include "TemperatureBandWidget.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QVBoxLayout>
@@ -64,6 +65,7 @@ void MainWindow::on_actionLoad_CSV_triggered()
             for (int i = 0; i < m_model->recordCount(); ++i)
                 allRecords.append(m_model->record(i));
             m_tempChart->setRecords(allRecords);
+            ui->temperatureBandWidget->setRecords(allRecords);
         }
     }
 }

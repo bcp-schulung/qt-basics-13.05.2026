@@ -24,6 +24,8 @@ set(PROJECT_SOURCES
         WeatherModel.cpp
         TemperatureAreaChart.h
         TemperatureAreaChart.cpp
+        TemperatureBandWidget.h
+        TemperatureBandWidget.cpp
         ${TS_FILES}
 )
 
