@@ -15,6 +15,12 @@ MainWindow::MainWindow(QWidget *parent)
     m_model = new WeatherModel(this);
     m_proxy = new WeatherProxyModel(this);
     m_proxy->setSourceModel(m_model);
+    ui->tableView->setModel(m_proxy);
+    ui->tableView->setSortingEnabled(true);
+
+    ui->mostInterestingElements->setModel(m_proxy);
+    ui->mostInterestingElements->setSortingEnabled(true);
+
 }
 
 MainWindow::~MainWindow()
@@ -24,7 +30,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionLoad_CSV_triggered()
 {
-    QString path = QFileDialog::getOpenFileName(this, "Open CSV", {}, "CSV (*.csv)");
+    QString path = QFileDialog::getOpenFileName(this, "Open CSV", "C:\\Users\\Administrator\\Documents\\qt-basics-13.05.2026", "CSV (*.csv)");
     if (!path.isEmpty()) {
         QString err;
         if (!m_model->loadFromFile(path, &err))
