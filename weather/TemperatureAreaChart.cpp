@@ -16,10 +16,6 @@
 #include <cmath>
 #include <limits>
 
-// QT_CHARTS_USE_NAMESPACE is a no-op in Qt6.2+ but brings QtCharts into scope
-// for Qt5 and earlier Qt6 — safe to use unconditionally.
-QT_CHARTS_USE_NAMESPACE
-
 TemperatureAreaChart::TemperatureAreaChart(QWidget *parent)
     : QWidget(parent)
 {
@@ -88,8 +84,8 @@ void TemperatureAreaChart::setRecords(const QVector<WeatherRecord> &records)
     // Area fill: gradient from warm (top = high) to cool (bottom = low)
     QLinearGradient gradient(0, 0, 0, 1);
     gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-    gradient.setColorAt(0.0, QColor(0xE53935, 160));  // red at top (hot)
-    gradient.setColorAt(1.0, QColor(0x1E88E5, 160));  // blue at bottom (cold)
+    gradient.setColorAt(0.0, QColor(0xE5, 0x39, 0x35, 160));  // red at top (hot)
+    gradient.setColorAt(1.0, QColor(0x1E, 0x88, 0xE5, 160));  // blue at bottom (cold)
     areaSeries->setBrush(gradient);
 
     QPen areaPen(Qt::NoPen);
