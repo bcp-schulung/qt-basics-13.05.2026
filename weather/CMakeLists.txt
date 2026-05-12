@@ -19,6 +19,9 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        WeatherRecord.h
+        WeatherModel.h
+        WeatherModel.cpp
         ${TS_FILES}
 )
 
