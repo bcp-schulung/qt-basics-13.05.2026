@@ -1,8 +1,10 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "WeatherModel.h"
+#include "TemperatureAreaChart.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QVBoxLayout>
 #include <cmath>
 #include <limits>
 
@@ -21,6 +23,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mostInterestingElements->setModel(m_proxy);
     ui->mostInterestingElements->setSortingEnabled(true);
 
+    // ── Tab 3: Temperature area chart ─────────────────────────────────────────
+    m_tempChart = new TemperatureAreaChart(ui->tab_2);
+    auto *chartLayout = new QVBoxLayout(ui->tab_2);
+    chartLayout->setContentsMargins(4, 4, 4, 4);
+    chartLayout->addWidget(m_tempChart);
 }
 
 MainWindow::~MainWindow()
@@ -50,6 +57,13 @@ void MainWindow::on_actionLoad_CSV_triggered()
             }
             if (std::isfinite(highest)) ui->highestTemp->display(highest);
             if (std::isfinite(lowest))  ui->lowestTemp->display(lowest);
+
+            // Update the temperature area chart (Tab 3)
+            QVector<WeatherRecord> allRecords;
+            allRecords.reserve(m_model->recordCount());
+            for (int i = 0; i < m_model->recordCount(); ++i)
+                allRecords.append(m_model->record(i));
+            m_tempChart->setRecords(allRecords);
         }
     }
 }

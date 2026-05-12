@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "WeatherModel.h"
+#include "TemperatureAreaChart.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -25,5 +26,6 @@ private:
     Ui::MainWindow *ui;
     WeatherModel *m_model;
     WeatherProxyModel *m_proxy;
+    TemperatureAreaChart *m_tempChart;
 };
 #endif // MAINWINDOW_H
