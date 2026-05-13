@@ -10,6 +10,8 @@ qt_standard_project_setup(REQUIRES 6.10)
 
 qt_add_executable(appquickdemo
     main.cpp
+    Counter.h
+    Counter.cpp
 )
 
 qt_add_qml_module(appquickdemo
