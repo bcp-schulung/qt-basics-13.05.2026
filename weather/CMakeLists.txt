@@ -86,3 +86,7 @@ install(TARGETS weather
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(weather)
 endif()
+
+# ─── Unit tests ──────────────────────────────────────────────────────────────
+enable_testing()
+add_subdirectory(tests)
