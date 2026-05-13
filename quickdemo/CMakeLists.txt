@@ -12,12 +12,15 @@ qt_add_executable(appquickdemo
     main.cpp
     Counter.h
     Counter.cpp
+    JsonSerializer.h
+    JsonSerializer.cpp
 )
 
 qt_add_qml_module(appquickdemo
     URI quickdemo
     QML_FILES
         Main.qml
+        JsonDemo.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
