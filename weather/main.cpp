@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "WeatherDatabase.h"
 
 #include <QApplication>
 #include <QLocale>
@@ -6,6 +7,9 @@
 
 int main(int argc, char *argv[])
 {
+    // Register so QVector<WeatherRecord> can be passed via queued signal/slot.
+    qRegisterMetaType<QVector<WeatherRecord>>("QVector<WeatherRecord>");
+
     QApplication a(argc, argv);
 
     QTranslator translator;

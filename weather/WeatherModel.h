@@ -32,9 +32,13 @@ public:
     bool loadFromFile(const QString &filePath, QString *error = nullptr);
     void clear();
 
+    // Bulk load from an already-parsed vector (e.g. from the SQLite cache).
+    void setRecords(QVector<WeatherRecord> records);
+
     // Direct access for stats / detail-panel callers
-    const WeatherRecord &record(int row) const { return m_records.at(row); }
-    int  recordCount() const                   { return m_records.size();  }
+    const WeatherRecord         &record    (int row) const { return m_records.at(row); }
+    const QVector<WeatherRecord> &allRecords()        const { return m_records;          }
+    int  recordCount() const                               { return m_records.size();   }
 
 private:
     QVector<WeatherRecord> m_records;

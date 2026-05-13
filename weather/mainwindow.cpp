@@ -3,9 +3,12 @@
 #include "WeatherModel.h"
 #include "TemperatureAreaChart.h"
 #include "TemperatureBandWidget.h"
+#include "WeatherDatabase.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QVBoxLayout>
+#include <QStandardPaths>
+#include <QStatusBar>
 #include <cmath>
 #include <limits>
 
@@ -29,44 +32,111 @@ MainWindow::MainWindow(QWidget *parent)
     auto *chartLayout = new QVBoxLayout(ui->tab_2);
     chartLayout->setContentsMargins(4, 4, 4, 4);
     chartLayout->addWidget(m_tempChart);
+
+    // ── SQLite worker on a dedicated background thread ─────────────────────────
+    const QString dbDir  = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    const QString dbPath = dbDir + QStringLiteral("/weather_cache.db");
+
+    m_dbWorker = new WeatherDatabaseWorker(dbPath);   // no parent — moved to thread
+    m_dbThread = new QThread(this);
+    m_dbWorker->moveToThread(m_dbThread);
+
+    // Wire worker signals → main-thread slots (automatically queued).
+    connect(m_dbWorker, &WeatherDatabaseWorker::loadCompleted,
+            this,        &MainWindow::onDbLoadCompleted);
+    connect(m_dbWorker, &WeatherDatabaseWorker::saveCompleted,
+            this,        &MainWindow::onDbSaveCompleted);
+    connect(m_dbWorker, &WeatherDatabaseWorker::errorOccurred,
+            this,        &MainWindow::onDbError);
+
+    // Expose a signal so the main thread can safely enqueue a save request.
+    connect(this,        &MainWindow::requestDbSave,
+            m_dbWorker,  &WeatherDatabaseWorker::save);
+
+    // Thread lifetime management.
+    connect(m_dbThread, &QThread::started,  m_dbWorker, &WeatherDatabaseWorker::initAndLoad);
+    connect(m_dbThread, &QThread::finished, m_dbWorker, &QObject::deleteLater);
+
+    m_dbThread->start();
+    statusBar()->showMessage(tr("Loading cached data…"));
 }
 
 MainWindow::~MainWindow()
 {
+    m_dbThread->quit();
+    m_dbThread->wait();
     delete ui;
 }
 
-void MainWindow::on_actionLoad_CSV_triggered()
+// ─── Private helpers ──────────────────────────────────────────────────────────
+
+void MainWindow::populateUi(const QVector<WeatherRecord> &records)
 {
-    QString path = QFileDialog::getOpenFileName(this, "Open CSV", "C:\\Users\\Administrator\\Documents\\qt-basics-13.05.2026", "CSV (*.csv)");
-    if (!path.isEmpty()) {
-        QString err;
-        if (!m_model->loadFromFile(path, &err))
-            QMessageBox::critical(this, "Error", err);
-        else {
-            qDebug() << "Loaded" << m_model->recordCount() << "records";
-            ui->totalEntries->display(m_model->recordCount());
+    ui->totalEntries->display(records.size());
 
-            double highest = -std::numeric_limits<double>::infinity();
-            double lowest  =  std::numeric_limits<double>::infinity();
-            for (int i = 0; i < m_model->recordCount(); ++i) {
-                double t = m_model->record(i).temperature_c;
-                if (!std::isnan(t)) {
-                    if (t > highest) highest = t;
-                    if (t < lowest)  lowest  = t;
-                }
-            }
-            if (std::isfinite(highest)) ui->highestTemp->display(highest);
-            if (std::isfinite(lowest))  ui->lowestTemp->display(lowest);
-
-            // Update the temperature area chart (Tab 3)
-            QVector<WeatherRecord> allRecords;
-            allRecords.reserve(m_model->recordCount());
-            for (int i = 0; i < m_model->recordCount(); ++i)
-                allRecords.append(m_model->record(i));
-            m_tempChart->setRecords(allRecords);
-            ui->temperatureBandWidget->setRecords(allRecords);
+    double highest = -std::numeric_limits<double>::infinity();
+    double lowest  =  std::numeric_limits<double>::infinity();
+    for (const WeatherRecord &r : records) {
+        if (!std::isnan(r.temperature_c)) {
+            if (r.temperature_c > highest) highest = r.temperature_c;
+            if (r.temperature_c < lowest)  lowest  = r.temperature_c;
         }
     }
+    if (std::isfinite(highest)) ui->highestTemp->display(highest);
+    if (std::isfinite(lowest))  ui->lowestTemp->display(lowest);
+
+    m_tempChart->setRecords(records);
+    ui->temperatureBandWidget->setRecords(records);
+}
+
+// ─── Database worker callbacks ────────────────────────────────────────────────
+
+void MainWindow::onDbLoadCompleted(QVector<WeatherRecord> records)
+{
+    if (records.isEmpty()) {
+        statusBar()->showMessage(tr("No cached data — load a CSV file to begin."));
+        return;
+    }
+
+    // Push records into the model and refresh all views.
+    m_model->setRecords(std::move(records));
+    populateUi(m_model->allRecords());
+    statusBar()->showMessage(
+        tr("Loaded %1 records from cache.").arg(m_model->recordCount()));
+}
+
+void MainWindow::onDbSaveCompleted(int count)
+{
+    statusBar()->showMessage(tr("Saved %1 records to cache.").arg(count), 5000);
+}
+
+void MainWindow::onDbError(QString message)
+{
+    statusBar()->showMessage(tr("Database error: %1").arg(message));
+    qWarning() << "[WeatherDB]" << message;
+}
+
+// ─── Menu actions ─────────────────────────────────────────────────────────────
+
+void MainWindow::on_actionLoad_CSV_triggered()
+{
+    QString path = QFileDialog::getOpenFileName(
+        this, tr("Open CSV"), QString(), tr("CSV files (*.csv)"));
+    if (path.isEmpty())
+        return;
+
+    QString err;
+    if (!m_model->loadFromFile(path, &err)) {
+        QMessageBox::critical(this, tr("Error"), err);
+        return;
+    }
+
+    qDebug() << "Loaded" << m_model->recordCount() << "records from CSV";
+    populateUi(m_model->allRecords());
+    statusBar()->showMessage(
+        tr("Loaded %1 records from CSV. Saving to cache…").arg(m_model->recordCount()));
+
+    // Persist to SQLite in the background — does not block the UI.
+    emit requestDbSave(m_model->allRecords());
 }
 

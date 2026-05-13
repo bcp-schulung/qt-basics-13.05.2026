@@ -90,6 +90,13 @@ void WeatherModel::clear()
     endResetModel();
 }
 
+void WeatherModel::setRecords(QVector<WeatherRecord> records)
+{
+    beginResetModel();
+    m_records = std::move(records);
+    endResetModel();
+}
+
 bool WeatherModel::loadFromFile(const QString &filePath, QString *error)
 {
     QFile file(filePath);
