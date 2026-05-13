@@ -72,7 +72,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::populateUi(const QVector<WeatherRecord> &records)
 {
-    ui->totalEntries->display(records.size());
+    ui->totalEntries->display(static_cast<int>(records.size()));
 
     double highest = -std::numeric_limits<double>::infinity();
     double lowest  =  std::numeric_limits<double>::infinity();
