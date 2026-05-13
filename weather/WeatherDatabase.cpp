@@ -288,7 +288,7 @@ void WeatherDatabaseWorker::save(const QVector<WeatherRecord> &records)
     }
 
     if (!db.commit()) {
-        db.rollback();
+        // db.rollback();
         emit errorOccurred(tr("Commit failed: %1").arg(db.lastError().text()));
         return;
     }

@@ -162,5 +162,7 @@ void MainWindow::on_actionClear_Cache_triggered()
 
     statusBar()->showMessage(tr("Clearing cache…"));
     emit requestDbClear();
+    m_model->clear();
+    populateUi(m_model->allRecords());
 }
 
