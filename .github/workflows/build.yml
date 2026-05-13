@@ -7,20 +7,44 @@ on:
     branches: ["**"]
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            qt-host: windows
+            qt-arch: win64_msvc2019_64
+            artifact-name: weather-windows-x64
+            artifact-path: build/Release/weather.exe
+          - os: ubuntu-latest
+            qt-host: linux
+            qt-arch: gcc_64
+            artifact-name: weather-linux-x64
+            artifact-path: build/weather
+          - os: macos-latest
+            qt-host: mac
+            qt-arch: clang_64
+            artifact-name: weather-macos-x64
+            artifact-path: build/weather.app
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libxkbcommon-dev libxkbcommon-x11-dev
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
           version: "6.7.*"
-          host: "windows"
+          host: ${{ matrix.qt-host }}
           target: "desktop"
-          arch: "win64_msvc2019_64"
+          arch: ${{ matrix.qt-arch }}
           modules: "qtcharts"
           cache: true
 
@@ -37,6 +61,6 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: weather-windows-x64
-          path: build/Release/weather.exe
+          name: ${{ matrix.artifact-name }}
+          path: ${{ matrix.artifact-path }}
           if-no-files-found: error
