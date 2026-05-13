@@ -19,12 +19,12 @@ jobs:
             artifact-path: build/Release/weather.exe
           - os: ubuntu-latest
             qt-host: linux
-            qt-arch: gcc_64
+            qt-arch: ""
             artifact-name: weather-linux-x64
             artifact-path: build/weather
           - os: macos-latest
             qt-host: mac
-            qt-arch: clang_64
+            qt-arch: ""
             artifact-name: weather-macos-x64
             artifact-path: build/weather.app
 

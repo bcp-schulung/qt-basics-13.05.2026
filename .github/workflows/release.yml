@@ -17,11 +17,11 @@ jobs:
             package-name: weather-${{ github.ref_name }}-windows-x64.zip
           - os: ubuntu-latest
             qt-host: linux
-            qt-arch: gcc_64
+            qt-arch: ""
             package-name: weather-${{ github.ref_name }}-linux-x64.zip
           - os: macos-latest
             qt-host: mac
-            qt-arch: clang_64
+            qt-arch: ""
             package-name: weather-${{ github.ref_name }}-macos-x64.zip
 
     runs-on: ${{ matrix.os }}
@@ -73,7 +73,13 @@ jobs:
       # ── macOS ─────────────────────────────────────────────────────────────
       - name: Bundle Qt dependencies (macOS)
         if: matrix.os == 'macos-latest'
-        run: macdeployqt build/weather.app -dmg
+        run: |
+          # Remove SQL driver plugins that reference unavailable system libs
+          # (ODBC, PostgreSQL, Mimer). The app only needs SQLite.
+          find "$Qt6_DIR/plugins/sqldrivers" \
+            \( -name "libqsqlodbc*" -o -name "libqsqlpsql*" -o -name "libqsqlmimer*" \) \
+            -delete
+          macdeployqt build/weather.app -dmg
 
       - name: Package (macOS)
         if: matrix.os == 'macos-latest'
