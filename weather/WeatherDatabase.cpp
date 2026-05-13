@@ -295,3 +295,23 @@ void WeatherDatabaseWorker::save(const QVector<WeatherRecord> &records)
 
     emit saveCompleted(records.size());
 }
+
+void WeatherDatabaseWorker::clearCache()
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen()) {
+        emit errorOccurred(tr("Database is not open — cannot clear cache"));
+        return;
+    }
+
+    QSqlQuery q(db);
+    if (!q.exec(QStringLiteral("DELETE FROM weather_records"))) {
+        emit errorOccurred(tr("Clear cache failed: %1").arg(q.lastError().text()));
+        return;
+    }
+
+    // Reclaim unused pages so the file actually shrinks on disk.
+    q.exec(QStringLiteral("VACUUM"));
+
+    emit cacheCleared();
+}

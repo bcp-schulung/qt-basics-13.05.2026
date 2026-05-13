@@ -40,12 +40,18 @@ public slots:
     // transaction. Safe to call from the main thread via a queued connection.
     void save(const QVector<WeatherRecord> &records);
 
+    // Deletes all rows from the table. Safe to call via a queued connection.
+    void clearCache();
+
 signals:
     // Emitted after initAndLoad(); records is empty when the DB is brand-new.
     void loadCompleted(QVector<WeatherRecord> records);
 
     // Emitted after a successful save(); count == records.size().
     void saveCompleted(int count);
+
+    // Emitted after clearCache() succeeds.
+    void cacheCleared();
 
     // Emitted on any SQL error; the worker remains usable after the error.
     void errorOccurred(QString message);

@@ -25,12 +25,17 @@ signals:
     // Forwarded to WeatherDatabaseWorker::save() via queued connection.
     void requestDbSave(QVector<WeatherRecord> records);
 
+    // Forwarded to WeatherDatabaseWorker::clearCache() via queued connection.
+    void requestDbClear();
+
 private slots:
     void on_actionLoad_CSV_triggered();
+    void on_actionClear_Cache_triggered();
 
     // Database worker callbacks (delivered on the UI thread via queued signals).
     void onDbLoadCompleted(QVector<WeatherRecord> records);
     void onDbSaveCompleted(int count);
+    void onDbCacheCleared();
     void onDbError(QString message);
 
 private:

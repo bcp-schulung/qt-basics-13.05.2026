@@ -46,12 +46,16 @@ MainWindow::MainWindow(QWidget *parent)
             this,        &MainWindow::onDbLoadCompleted);
     connect(m_dbWorker, &WeatherDatabaseWorker::saveCompleted,
             this,        &MainWindow::onDbSaveCompleted);
+    connect(m_dbWorker, &WeatherDatabaseWorker::cacheCleared,
+            this,        &MainWindow::onDbCacheCleared);
     connect(m_dbWorker, &WeatherDatabaseWorker::errorOccurred,
             this,        &MainWindow::onDbError);
 
-    // Expose a signal so the main thread can safely enqueue a save request.
+    // Expose signals so the main thread can safely enqueue worker requests.
     connect(this,        &MainWindow::requestDbSave,
             m_dbWorker,  &WeatherDatabaseWorker::save);
+    connect(this,        &MainWindow::requestDbClear,
+            m_dbWorker,  &WeatherDatabaseWorker::clearCache);
 
     // Thread lifetime management.
     connect(m_dbThread, &QThread::started,  m_dbWorker, &WeatherDatabaseWorker::initAndLoad);
@@ -110,6 +114,11 @@ void MainWindow::onDbSaveCompleted(int count)
     statusBar()->showMessage(tr("Saved %1 records to cache.").arg(count), 5000);
 }
 
+void MainWindow::onDbCacheCleared()
+{
+    statusBar()->showMessage(tr("Cache cleared."), 5000);
+}
+
 void MainWindow::onDbError(QString message)
 {
     statusBar()->showMessage(tr("Database error: %1").arg(message));
@@ -138,5 +147,20 @@ void MainWindow::on_actionLoad_CSV_triggered()
 
     // Persist to SQLite in the background — does not block the UI.
     emit requestDbSave(m_model->allRecords());
+}
+
+void MainWindow::on_actionClear_Cache_triggered()
+{
+    auto btn = QMessageBox::question(
+        this, tr("Clear Cache"),
+        tr("Delete all cached weather data from the local database?\n"
+           "You can reload data from a CSV file at any time."),
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+
+    if (btn != QMessageBox::Yes)
+        return;
+
+    statusBar()->showMessage(tr("Clearing cache…"));
+    emit requestDbClear();
 }
 

@@ -163,6 +163,7 @@
      <string>File</string>
     </property>
     <addaction name="actionLoad_CSV"/>
+    <addaction name="actionClear_Cache"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -170,6 +171,14 @@
   <action name="actionLoad_CSV">
    <property name="text">
     <string>Load CSV</string>
+   </property>
+  </action>
+  <action name="actionClear_Cache">
+   <property name="text">
+    <string>Clear Cache</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete all cached weather data from the local database</string>
    </property>
   </action>
  </widget>
