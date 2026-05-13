@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import quickdemo  // gives access to the Counter and JsonSerializer C++ classes
+import quickdemo  // gives access to the Counter, JsonSerializer and Logger C++ classes
 
 Window {
     width: 640
@@ -15,6 +15,7 @@ Window {
 
         TabButton { text: "Counter" }
         TabButton { text: "JSON" }
+        TabButton { text: "Logger" }
     }
 
     // ── Pages ─────────────────────────────────────────────────────────────────
@@ -108,5 +109,8 @@ Window {
 
         // ── Page 2: JSON ──────────────────────────────────────────────────────
         JsonDemo { }
+
+        // ── Page 3: Logger ────────────────────────────────────────────────────
+        LoggerDemo { }
     }
 }
